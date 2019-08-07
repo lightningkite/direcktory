@@ -8,6 +8,10 @@ import com.amazonaws.services.s3.model.ListObjectsV2Request
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.lightningkite.kommon.string.MediaType
 import com.lightningkite.lokalize.time.TimeStamp
+import kotlinx.io.core.Input
+import kotlinx.io.core.Output
+import kotlinx.io.streams.asInput
+import kotlinx.io.streams.asOutput
 import java.io.ByteArrayInputStream
 import java.io.File
 
@@ -33,16 +37,37 @@ class S3FileSystem(val client: AmazonS3 = AmazonS3ClientBuilder.defaultClient(),
         }
     }
 
-    override suspend fun overwrite(path: AbsolutePath, data: ByteArray) {
+    override suspend fun overwriteAll(path: AbsolutePath, data: ByteArray) {
         val tempFile = File.createTempFile("s3upload", "s3upload")
         tempFile.writeBytes(data)
         client.putObject(bucket, path.string, tempFile)
         tempFile.delete()
     }
 
+    override suspend fun overwrite(path: AbsolutePath): Output {
+        val tempFile = File.createTempFile("s3upload", "s3upload")
+        val basedOn = tempFile.outputStream().asOutput()
+        return object : Output by basedOn {
+            override fun close() {
+                basedOn.close()
+                client.putObject(bucket, path.string, tempFile)
+                tempFile.delete()
+            }
+        }
+    }
+
     override suspend fun readAll(path: AbsolutePath): ByteArray? {
         return try {
             client.getObject(bucket, path.string).objectContent.use { it.readBytes() }
+        } catch(e:Exception){
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun read(path: AbsolutePath): Input? {
+        return try {
+            client.getObject(bucket, path.string).objectContent.asInput()
         } catch(e:Exception){
             e.printStackTrace()
             null

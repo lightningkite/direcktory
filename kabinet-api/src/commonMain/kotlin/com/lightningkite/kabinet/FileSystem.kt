@@ -1,5 +1,8 @@
 package com.lightningkite.kabinet
 
+import kotlinx.io.core.Input
+import kotlinx.io.core.Output
+
 
 interface FileSystem {
     suspend fun info(path: AbsolutePath): FileInformation?
@@ -7,9 +10,14 @@ interface FileSystem {
     /**
      * Makes the directories if needed.
      */
-    suspend fun overwrite(path: AbsolutePath, data: ByteArray)
+    suspend fun overwriteAll(path: AbsolutePath, data: ByteArray)
+    /**
+     * Makes the directories if needed.
+     */
+    suspend fun overwrite(path: AbsolutePath): Output
 
     suspend fun readAll(path: AbsolutePath): ByteArray?
+    suspend fun read(path: AbsolutePath): Input?
 
     suspend fun deleteIfExists(path: AbsolutePath): Boolean
     suspend fun deleteRecursivelyIfExists(path: AbsolutePath): Boolean

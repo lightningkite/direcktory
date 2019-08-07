@@ -23,6 +23,8 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven("https://dl.bintray.com/lightningkite/com.lightningkite.krosslin")
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    maven("https://dl.bintray.com/kotlin/kotlin-dev")
 }
 
 val versions = Properties().apply {
@@ -39,6 +41,7 @@ kotlin {
             dependency(projectOrMavenDashPlatform("com.lightningkite", "kommon", versions.getProperty("kommon")))
             dependency(projectOrMavenDashPlatform("com.lightningkite", "lokalize", versions.getProperty("lokalize")))
             dependency(projectOrMavenDashPlatform("com.lightningkite", "kabinet-api", versions.getProperty("kabinet")))
+            dependency(io(versions.getProperty("kotlinx_io")))
         }
         test {
             dependency(testing)
